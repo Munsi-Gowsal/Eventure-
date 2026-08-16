@@ -8,7 +8,7 @@ const startServer = async () => {
     await connectDB();
 
     // Start Express server only after database connection succeeds
-    app.listen(env.PORT, () => {
+    app.listen(env.PORT, '0.0.0.0', () => {
       console.log(`🚀 Eventure backend running on port ${env.PORT} in ${env.NODE_ENV} mode`);
     });
   } catch (error) {

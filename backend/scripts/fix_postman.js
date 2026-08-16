@@ -19,7 +19,7 @@ const updateOrAdd = (key, value) => {
   }
 };
 
-updateOrAdd('baseUrl', 'http://localhost:5001');
+updateOrAdd('baseUrl', 'http://localhost:5000');
 updateOrAdd('adminEmail', 'development admin email placeholder');
 updateOrAdd('adminPassword', 'development admin password placeholder');
 updateOrAdd('accessToken', '');
@@ -38,14 +38,14 @@ function processItems(items) {
       processItems(item.item);
     } else if (item.request) {
       requestCount++;
-      
+
       let urlStr = '';
       if (typeof item.request.url === 'string') {
         urlStr = item.request.url;
       } else if (item.request.url && item.request.url.raw) {
         urlStr = item.request.url.raw;
       }
-      
+
       if (urlStr.includes('http://localhost:5000') || urlStr.includes('http://localhost:5001') || urlStr.includes('http://localhost')) {
         hardcodedCount++;
       }
@@ -53,24 +53,24 @@ function processItems(items) {
       // Convert anything starting with {{baseUrl}}/api/v1 or http://localhost:5001/api/v1 to the new standard.
       // The requirement: endpoint path is added AFTER {{baseUrl}}.
       // Examples: {{baseUrl}}/health, {{baseUrl}}/api/v1/events
-      
+
       // Let's normalize it carefully.
       let newUrl = urlStr;
-      
+
       // Replace localhost hardcodes
       newUrl = newUrl.replace(/https?:\/\/localhost:\d+/g, '{{baseUrl}}');
-      
+
       // Replace incorrect {{baseUrl}}/api/v1 if it was meant to be health/ready
       // But we just need to ensure the final result is exactly {{baseUrl}}/path
       // If the old one was {{baseUrl}}/api/v1, it's correct for API endpoints.
-      
+
       // Make sure we didn't duplicate {{baseUrl}}
       if (!newUrl.startsWith('{{baseUrl}}')) {
         // If it starts with /api/v1
         if (newUrl.startsWith('/')) {
-           newUrl = '{{baseUrl}}' + newUrl;
+          newUrl = '{{baseUrl}}' + newUrl;
         } else if (newUrl.startsWith('api/v1') || newUrl.startsWith('health') || newUrl.startsWith('ready')) {
-           newUrl = '{{baseUrl}}/' + newUrl;
+          newUrl = '{{baseUrl}}/' + newUrl;
         }
       }
 
@@ -78,7 +78,7 @@ function processItems(items) {
         item.request.url = newUrl;
       } else if (item.request.url) {
         item.request.url.raw = newUrl;
-        
+
         // Postman also splits URLs into host and path arrays.
         // It's safer to just store it as a string or update the raw property.
         // If we update raw, Postman uses that. But let's also fix host/path if they exist.
