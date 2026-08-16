@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { AdminUser, IAdminUser } from './auth.model';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt';
@@ -46,7 +47,8 @@ export class AuthService {
       throw this.invalidRefreshError();
     }
 
-    const isValid = await compareBcryptHash(refreshTokenRaw, admin.refreshTokenHash);
+    const sha256Hash = crypto.createHash('sha256').update(refreshTokenRaw).digest('hex');
+    const isValid = await compareBcryptHash(sha256Hash, admin.refreshTokenHash);
     if (!isValid) {
       // Security: Token reuse detected or invalid token presented
       admin.refreshTokenHash = null;
@@ -78,8 +80,9 @@ export class AuthService {
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
 
-    // Hash refresh token before saving
-    admin.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    // Hash refresh token before saving (Bcrypt truncates at 72 bytes, so we sha256 it first)
+    const sha256Hash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    admin.refreshTokenHash = await bcrypt.hash(sha256Hash, 10);
     await admin.save();
 
     return { accessToken, refreshToken };

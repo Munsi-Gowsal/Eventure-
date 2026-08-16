@@ -10,13 +10,13 @@
     },
     {
       "key": "adminEmail",
-      "value": "admin_test_2@example.com",
+      "value": "development admin email placeholder",
       "type": "default",
       "enabled": true
     },
     {
       "key": "adminPassword",
-      "value": "CHANGE_ME",
+      "value": "development admin password placeholder",
       "type": "default",
       "enabled": true
     },
