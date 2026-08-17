@@ -15,7 +15,6 @@ const CATEGORIES = [
 export const Home: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const location = useLocation();
 
   useEffect(() => {
@@ -36,11 +35,10 @@ export const Home: React.FC = () => {
   const deferredSearch = useDeferredValue(searchQuery);
 
   const { data: events, isLoading, error } = useQuery({
-    queryKey: ['events', activeCategory, deferredSearch, dateFilter],
+    queryKey: ['events', activeCategory, deferredSearch],
     queryFn: () => eventsApi.getEvents({ 
       category: activeCategory !== 'All' ? activeCategory.toLowerCase() : undefined, 
-      search: deferredSearch || undefined,
-      date: dateFilter || undefined
+      search: deferredSearch || undefined
     }),
   });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useId } from "react";
+import { useState } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
