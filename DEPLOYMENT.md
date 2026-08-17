@@ -1,79 +1,109 @@
-# Eventure Deployment Guide (Render + Vercel)
+# Eventure Deployment Guide
 
-This document provides step-by-step instructions for deploying the Eventure application.
-The backend will be deployed as a Render Web Service, and the frontend will be deployed on Vercel later.
+## 1. Deployment Architecture
+- **Frontend**: React + Vite SPA, hosted on Vercel. Vercel acts as a CDN and static file server. SPA routing is handled via `vercel.json` rewrites.
+- **Backend**: Node.js + Express API, hosted on Render or Railway. Responsible for all business logic, authentication, and database interaction.
+- **Database**: MongoDB Atlas (M0/shared cluster).
 
-## 1. MongoDB Atlas Setup
-1. Create a free MongoDB Atlas cluster.
-2. Under "Database Access", create a dedicated database user with a **strong generated password**.
-3. Under "Network Access", add `0.0.0.0/0` (Allow access from anywhere) so Render can connect.
-4. Copy your connection string (it should look like `mongodb+srv://<username>:<password>@cluster0.mongodb.net/eventure?retryWrites=true&w=majority`).
+## 2. MongoDB Atlas Setup
+1. Create an M0/shared cluster in MongoDB Atlas.
+2. Under "Database Access", create a dedicated database user (e.g., `eventure_prod_user`). Do not use your organization admin account.
+3. Generate a strong, random password.
+4. Restrict permissions to "Read and write to any database" (or restrict specifically to the Eventure database).
+5. Under "Network Access", allowlist the static outbound IPs of your backend deployment platform. If static IPs are unavailable, allow `0.0.0.0/0` (allow access from anywhere) but ensure your database user has a very strong password.
+6. Copy the production `MONGODB_URI` string. **Do not commit this to Git.**
 
-## 2. Render Backend Setup
-1. Create a new **Web Service** on Render.
-2. Connect your GitHub repository.
-3. Configure the following settings EXACTLY as follows:
+## 3. Backend Deployment
+1. Deploy the `backend/` directory to Render or Railway.
+2. **Build Command**: `npm ci && npm run build`
+3. **Start Command**: `node dist/server.js`
+4. Configure the following environment variables in the deployment platform dashboard:
+   - `NODE_ENV=production`
+   - `PORT=5001` (or let the platform inject it)
+   - `MONGODB_URI=<Your Atlas URI>`
+   - `JWT_ACCESS_SECRET=<Strong Random String>`
+   - `JWT_REFRESH_SECRET=<Different Strong Random String>`
+   - `JWT_ACCESS_EXPIRES_IN=15m`
+   - `JWT_REFRESH_EXPIRES_IN=7d`
+   - `CLIENT_URL=https://your-eventure.vercel.app` (Placeholder for now)
+   - `CORS_ORIGINS=https://your-eventure.vercel.app` (Placeholder for now)
+5. Ensure the platform provides an HTTPS endpoint.
 
-- **Root Directory**: `backend/`
-- **Build Command**: `npm ci && npm run build`
-- **Start Command**: `node dist/server.js`
+## 4. Frontend Deployment
+1. Deploy the `frontend/` directory to Vercel.
+2. **Framework**: Vite
+3. **Build Command**: `npm run build`
+4. **Output Directory**: `dist`
+5. Configure the environment variable in the Vercel dashboard:
+   - `VITE_API_BASE_URL=https://<YOUR-BACKEND-DOMAIN>/api/v1`
+6. Deploy to receive your final production Vercel URL.
 
-## 3. Render Health Check
-Render requires a health check endpoint to know when your service is live and ready to receive traffic.
-- **Health Check Path**: `/health`
+## 5. Environment Variable Names
+- `MONGODB_URI`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `CLIENT_URL`
+- `CORS_ORIGINS`
+- `VITE_API_BASE_URL`
 
-## 4. Environment Variables
-Add the following required environment variables to your Render Web Service dashboard under "Environment".
-*(Never commit these secrets to GitHub!)*
+## 6. Deployment Order
+1. Provision MongoDB Atlas.
+2. Deploy Backend (placeholder CORS/CLIENT_URL).
+3. Deploy Frontend (with actual backend API URL).
+4. Update Backend CORS (with actual frontend URL).
 
-- `NODE_ENV`: `production`
-- `MONGODB_URI`: `<Your MongoDB Atlas Connection String>`
-- `JWT_ACCESS_SECRET`: `<Generate a random string of at least 32 characters>`
-- `JWT_REFRESH_SECRET`: `<Generate a DIFFERENT random string of at least 32 characters>`
-- `JWT_ACCESS_EXPIRES_IN`: `15m`
-- `JWT_REFRESH_EXPIRES_IN`: `7d`
-- `CLIENT_URL`: `https://your-eventure-frontend.vercel.app` (Placeholder until Vercel is deployed)
-- `CORS_ORIGINS`: `https://your-eventure-frontend.vercel.app` (Placeholder until Vercel is deployed)
+## 7. CORS Configuration
+After Vercel provides the final production URL (e.g., `https://eventure-prod.vercel.app`), update the backend environment variables `CLIENT_URL` and `CORS_ORIGINS` to match exactly. Do not use a trailing slash. Redeploy the backend.
 
-*(Note: Render automatically injects a `PORT` environment variable. The backend uses `process.env.PORT` to bind to the correct port safely. Locally, it defaults to 5001).*
+## 8. Production Cookie Verification
+Log in as an admin on the production frontend. Open browser DevTools -> Application -> Cookies. Verify the `refreshToken` cookie is present and has the following flags checked:
+- `HttpOnly`
+- `Secure`
+- `SameSite=Strict`
 
-## 5. Security & Networking
-- **Local vs Production PORT behavior**: Locally, the server binds to port 5001. On Render, it dynamically binds to the port provided by Render (via `process.env.PORT`) and listens on `0.0.0.0`.
-- **CORS Configuration**: CORS explicitly rejects any origin not defined in `CORS_ORIGINS`. It is configured strictly.
-- **HTTPS Expectation**: Render provides automatic HTTPS out of the box.
+## 9. Production E2E Verification
+(See the checklist below for required verification steps).
 
-## 6. Vercel Frontend Deployment
-*Frontend deployment instructions will be added here during the frontend deployment phase.*
+## 10. Security Verification
+- Ensure `credentials: true` in CORS does not use `*`.
+- Access tokens must never be visible in localStorage/sessionStorage.
+- Ensure no secrets (`.env`) are committed to Git.
+
+## 11. Rollback/Basic Troubleshooting
+- If the frontend fails to log in, check the Network tab. If CORS fails, verify `CORS_ORIGINS` on the backend matches the Vercel URL exactly.
+- If SPA routes return 404 on refresh, ensure `vercel.json` is present in the frontend root.
+- If the database fails to connect, verify Network Access rules in MongoDB Atlas.
 
 ---
 
-## 7. Render Deployment Checklist
+## Deployment Checklist
 
-[ ] MongoDB Atlas database created
-[ ] Dedicated MongoDB database user created
-[ ] Strong database password generated
-[ ] Atlas network access configured
-[ ] MONGODB_URI added to Render environment
-[ ] JWT_ACCESS_SECRET added to Render
-[ ] JWT_REFRESH_SECRET added to Render
-[ ] CLIENT_URL configured
-[ ] CORS_ORIGINS configured
-[ ] Render root directory set to backend/
-[ ] Render build command configured
-[ ] Render start command configured
-[ ] Render health check configured as /health
-[ ] HTTPS verified
-[ ] GET /health returns 200
-[ ] GET /ready returns 200
-[ ] Public GET /api/v1/events works
-[ ] Admin login works
-[ ] Event creation works
-[ ] Event update works
-[ ] Event registration works
-[ ] Soft delete works
-[ ] Refresh-token cookie has Secure
-[ ] Refresh-token cookie has HttpOnly
-[ ] Refresh-token cookie has SameSite=Strict
-[ ] Production CORS verified
-[ ] No secrets in frontend bundle
-[ ] No secrets committed to git
+- [ ] MongoDB Atlas cluster created
+- [ ] Production database user created
+- [ ] Network access configured
+- [ ] MONGODB_URI configured on backend
+- [ ] Backend deployed
+- [ ] /health returns 200
+- [ ] /ready returns 200
+- [ ] HTTPS confirmed
+- [ ] Frontend deployed
+- [ ] VITE_API_BASE_URL configured
+- [ ] Final Vercel URL obtained
+- [ ] Backend CLIENT_URL updated
+- [ ] Backend CORS_ORIGINS updated
+- [ ] Backend redeployed
+- [ ] Refresh cookie verified
+- [ ] Public browsing verified
+- [ ] Search verified
+- [ ] Filtering verified
+- [ ] Event registration verified
+- [ ] Attendee count verified
+- [ ] Admin login verified
+- [ ] Admin create verified
+- [ ] Admin update verified
+- [ ] Admin soft delete verified
+- [ ] Logout verified
+- [ ] Protected routes verified
+- [ ] Production frontend bundle inspected
+- [ ] No secrets exposed
+- [ ] SPA route refresh verified
