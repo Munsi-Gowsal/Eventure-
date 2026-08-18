@@ -1,4 +1,6 @@
 import { Event, IEvent } from './event.model';
+import { Registration } from './registration.model';
+import { AppError } from '../../utils/AppError';
 import mongoose from 'mongoose';
 
 export class EventService {
@@ -15,11 +17,11 @@ export class EventService {
     }
 
     if (date) {
-      // Treat 'YYYY-MM-DD' as calendar day by searching >= startOfDay and < startOfNextDay
+      // Treat 'YYYY-MM-DD' as UTC calendar day by searching >= startOfDay and < startOfNextDay
       const startOfDay = new Date(date);
       if (!isNaN(startOfDay.getTime())) {
         const endOfDay = new Date(startOfDay);
-        endOfDay.setDate(endOfDay.getDate() + 1);
+        endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
         filter.date = { $gte: startOfDay, $lt: endOfDay };
       }
     }
@@ -69,10 +71,7 @@ export class EventService {
     }
 
     if (data.maxAttendees !== undefined && data.maxAttendees < event.attendees) {
-      const err: any = new Error('Cannot reduce maxAttendees below current attendees count');
-      err.statusCode = 409;
-      err.code = 'CONFLICT';
-      throw err;
+      throw new AppError('Cannot reduce maxAttendees below current attendees count', 409, 'CONFLICT');
     }
 
     Object.assign(event, data);
@@ -92,7 +91,12 @@ export class EventService {
     }
   }
 
-  static async registerForEvent(id: string) {
+  static async registerForEvent(id: string, userId: string) {
+    const existingRegistration = await Registration.findOne({ userId, eventId: id });
+    if (existingRegistration && existingRegistration.status === 'REGISTERED') {
+      throw new AppError('You are already registered for this event.', 409, 'CONFLICT');
+    }
+
     // Atomic update to prevent race conditions
     const event = await Event.findOneAndUpdate(
       {
@@ -114,11 +118,29 @@ export class EventService {
       if (!existingEvent || existingEvent.isDeleted) {
         throw this.notFoundError();
       } else {
-        const err: any = new Error('This event has reached capacity.');
-        err.statusCode = 409;
-        err.code = 'CONFLICT';
-        throw err;
+        throw new AppError('This event has reached capacity.', 409, 'CONFLICT');
       }
+    }
+
+    try {
+      if (existingRegistration) {
+        // Reactivate cancelled registration
+        existingRegistration.status = 'REGISTERED';
+        existingRegistration.registeredAt = new Date();
+        existingRegistration.cancelledAt = undefined;
+        await existingRegistration.save();
+      } else {
+        await Registration.create({ userId, eventId: id });
+      }
+    } catch (e: any) {
+      // Rollback attendee count if registration fails
+      await Event.updateOne({ _id: id }, { $inc: { attendees: -1 } });
+      
+      // If it's a duplicate key error, we can still return a 409 Conflict
+      if (e.code === 11000) {
+        throw new AppError('You are already registered for this event.', 409, 'CONFLICT');
+      }
+      throw e;
     }
 
     return {
@@ -128,10 +150,39 @@ export class EventService {
     };
   }
 
+  static async cancelRegistration(id: string, userId: string) {
+    const registration = await Registration.findOne({ userId, eventId: id, status: 'REGISTERED' });
+    if (!registration) {
+      throw new AppError('Registration not found or already cancelled.', 404, 'NOT_FOUND');
+    }
+
+    registration.status = 'CANCELLED';
+    registration.cancelledAt = new Date();
+    await registration.save();
+
+    // Atomically decrement attendees count
+    await Event.updateOne(
+      { _id: id },
+      { $inc: { attendees: -1 } }
+    );
+
+    return { success: true };
+  }
+
+  static async getEventRegistrations(id: string) {
+    const event = await Event.findById(id);
+    if (!event) {
+      throw this.notFoundError();
+    }
+
+    const registrations = await Registration.find({ eventId: id, status: 'REGISTERED' })
+      .populate('userId', 'fullName email') // Assuming we want user details
+      .sort({ registeredAt: -1 });
+
+    return registrations;
+  }
+
   private static notFoundError() {
-    const err: any = new Error('Resource not found');
-    err.statusCode = 404;
-    err.code = 'NOT_FOUND';
-    return err;
+    return new AppError('Resource not found', 404, 'NOT_FOUND');
   }
 }

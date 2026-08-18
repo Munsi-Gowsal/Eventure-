@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import { AppError } from '../utils/AppError';
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction): void => {
   if (res.headersSent) {
@@ -20,8 +21,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
   }
 
   // Custom App Error or generic mapping
-  const statusCode = err.statusCode || 500;
-  let code = err.code || 'INTERNAL_ERROR';
+  const statusCode = err instanceof AppError ? err.statusCode : (err.statusCode || 500);
+  let code = err instanceof AppError ? err.code : (err.code || 'INTERNAL_ERROR');
   let message = err.message || 'An unexpected error occurred';
 
   // Do not leak internal server error details in production

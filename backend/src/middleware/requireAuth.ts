@@ -20,9 +20,10 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
 
   try {
     const payload = verifyAccessToken(token);
-    req.admin = {
+    req.user = {
       id: payload.id,
       email: payload.email,
+      role: payload.role as 'ADMIN' | 'ATTENDEE',
     };
     next();
   } catch (error) {

@@ -39,23 +39,16 @@ const clearRefreshCookie = (res: Response) => {
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (env.NODE_ENV === 'production') {
-      res.status(403).json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: 'Registration is disabled in production.' }
-      });
-      return;
-    }
-    
     const { fullName, email, password } = req.body;
-    const { accessToken, refreshToken } = await AuthService.registerAdmin(fullName, email, password);
+    // Default registration creates an ATTENDEE. Admins would need to be created manually or via a separate protected route.
+    const { accessToken, refreshToken } = await AuthService.register(fullName, email, password, 'ATTENDEE');
     
     setRefreshCookie(res, refreshToken);
 
     res.status(201).json({
       success: true,
       data: { 
-        message: 'Admin account created successfully',
+        message: 'Account created successfully',
         accessToken
       },
     });

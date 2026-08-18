@@ -4,11 +4,11 @@ import { EventService } from './event.service';
 export const listEvents = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const query = {
-      category: req.query.category as string,
-      date: req.query.date as string,
-      search: req.query.search as string,
-      page: parseInt(req.query.page as string, 10) || 1,
-      limit: parseInt(req.query.limit as string, 10) || 20,
+      category: req.query.category as string | undefined,
+      date: req.query.date as string | undefined,
+      search: req.query.search as string | undefined,
+      page: req.query.page as unknown as number,
+      limit: req.query.limit as unknown as number,
     };
 
     const result = await EventService.listEvents(query);
@@ -73,10 +73,42 @@ export const softDeleteEvent = async (req: Request, res: Response, next: NextFun
 
 export const registerForEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await EventService.registerForEvent(req.params.id as string);
+    if (!req.user) {
+      res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
+    const result = await EventService.registerForEvent(req.params.id as string, req.user.id);
     res.status(200).json({
       success: true,
       data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelRegistration = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
+    const result = await EventService.cancelRegistration(req.params.id as string, req.user.id);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEventRegistrations = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const registrations = await EventService.getEventRegistrations(req.params.id as string);
+    res.status(200).json({
+      success: true,
+      data: registrations,
     });
   } catch (error) {
     next(error);

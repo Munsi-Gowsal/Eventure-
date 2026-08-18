@@ -87,10 +87,12 @@ app.use('/api/v1/auth', authLimiter);
 
 import authRoutes from './modules/auth/auth.routes';
 import eventRoutes from './modules/events/event.routes';
+import userRoutes from './modules/users/user.routes';
 
 // 7. Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/me', userRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { motion, useTransform, useSpring, useMotionValue, useScroll } from "framer-motion";
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
@@ -141,56 +141,15 @@ export default function ScrollMorphHero() {
         return () => observer.disconnect();
     }, []);
 
-    // --- Virtual Scroll Logic ---
-    const virtualScroll = useMotionValue(0);
-    const scrollRef = useRef(0); // Keep track of scroll value without re-renders
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            // Prevent default to stop browser overscroll/bounce
-            e.preventDefault();
-
-            const newScroll = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-        };
-
-        // Touch support
-        let touchStartY = 0;
-        const handleTouchStart = (e: TouchEvent) => {
-            touchStartY = e.touches[0].clientY;
-        };
-        const handleTouchMove = (e: TouchEvent) => {
-            const touchY = e.touches[0].clientY;
-            const deltaY = touchStartY - touchY;
-            touchStartY = touchY;
-
-            const newScroll = Math.min(Math.max(scrollRef.current + deltaY, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
-        };
-
-        // Attach listeners to container instead of window for portability
-        container.addEventListener("wheel", handleWheel, { passive: false });
-        container.addEventListener("touchstart", handleTouchStart, { passive: false });
-        container.addEventListener("touchmove", handleTouchMove, { passive: false });
-
-        return () => {
-            container.removeEventListener("wheel", handleWheel);
-            container.removeEventListener("touchstart", handleTouchStart);
-            container.removeEventListener("touchmove", handleTouchMove);
-        };
-    }, [virtualScroll]);
+    // --- Native Scroll Logic ---
+    const { scrollY } = useScroll();
 
     // 1. Morph Progress: 0 (Circle) -> 1 (Bottom Arc)
-    const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
+    const morphProgress = useTransform(scrollY, [0, 300], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
 
     // 2. Scroll Rotation (Shuffling): Starts after morph
-    const scrollRotate = useTransform(virtualScroll, [600, 3000], [0, 360]);
+    const scrollRotate = useTransform(scrollY, [300, 1000], [0, 360]);
     const smoothScrollRotate = useSpring(scrollRotate, { stiffness: 40, damping: 20 });
 
     // --- Mouse Parallax ---
