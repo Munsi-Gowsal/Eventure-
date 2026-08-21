@@ -5,6 +5,7 @@ export const registerSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters long'),
     email: z.string().email('Invalid email format').toLowerCase(),
     password: z.string().min(8, 'Password must be at least 8 characters long'),
+    role: z.enum(['ADMIN', 'ATTENDEE']).optional(),
   }),
 });
 

@@ -35,6 +35,7 @@ const eventSchema = new Schema<IEvent>(
 // - Text index on title for case-insensitive search
 // - Compound index on category, date, and isDeleted for efficient filtering
 eventSchema.index({ title: 'text' });
-eventSchema.index({ isDeleted: 1, category: 1, date: 1 });
+eventSchema.index({ isDeleted: 1, date: -1 });
+eventSchema.index({ isDeleted: 1, category: 1, date: -1 });
 
 export const Event = mongoose.model<IEvent>('Event', eventSchema);

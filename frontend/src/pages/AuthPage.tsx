@@ -1,23 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { client } from '../lib/api/client';
+import { useAuth } from '../auth/AuthProvider';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [role, setRole] = useState<'ATTENDEE' | 'ADMIN'>('ATTENDEE');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    console.log(isLogin ? 'Logging in' : 'Signing up', { email, password, name });
-    
-    // Redirect back to where they came from (e.g. event details) or home
-    const from = (location.state as any)?.from?.pathname || '/my-events';
-    navigate(from, { replace: true });
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        const res = await client.post('/auth/login', { email, password });
+        login(res.data.data.accessToken);
+      } else {
+        const res = await client.post('/auth/register', { 
+          fullName: name, 
+          email, 
+          password,
+          role 
+        });
+        login(res.data.data.accessToken);
+      }
+      
+      const from = (location.state as any)?.from?.pathname || (role === 'ADMIN' ? '/admin' : '/my-events');
+      navigate(from, { replace: true });
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,18 +66,44 @@ export const AuthPage: React.FC = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {!isLogin && (
-              <div>
-                <label className="block font-black font-display uppercase mb-2">Full Name</label>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="neo-input w-full p-4 font-bold"
-                  placeholder="JOHN DOE"
-                  required={!isLogin}
-                />
+            {error && (
+              <div className="bg-[#FF3366] text-white font-bold p-3 border-[3px] border-black text-sm">
+                {error}
               </div>
+            )}
+            {!isLogin && (
+              <>
+                <div>
+                  <label className="block font-black font-display uppercase mb-2">Account Type</label>
+                  <div className="flex gap-4">
+                    <button 
+                      type="button"
+                      onClick={() => setRole('ATTENDEE')}
+                      className={`flex-1 py-3 border-[3px] border-black font-black uppercase text-sm transition-colors ${role === 'ATTENDEE' ? 'bg-[#00E5FF] shadow-[4px_4px_0px_0px_#000]' : 'bg-white hover:bg-gray-50'}`}
+                    >
+                      Attend Events
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setRole('ADMIN')}
+                      className={`flex-1 py-3 border-[3px] border-black font-black uppercase text-sm transition-colors ${role === 'ADMIN' ? 'bg-[#00E5FF] shadow-[4px_4px_0px_0px_#000]' : 'bg-white hover:bg-gray-50'}`}
+                    >
+                      Host Events
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-black font-display uppercase mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="neo-input w-full p-4 font-bold"
+                    placeholder="JOHN DOE"
+                    required={!isLogin}
+                  />
+                </div>
+              </>
             )}
             <div>
               <label className="block font-black font-display uppercase mb-2">Email Address</label>
@@ -77,8 +128,18 @@ export const AuthPage: React.FC = () => {
               />
             </div>
 
-            <button type="submit" className="neo-button w-full py-4 text-xl flex justify-center items-center gap-2 bg-[#FFD23F] hover:bg-[#FF3366] hover:text-white mt-4">
-              {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'} <ArrowRight strokeWidth={3} />
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              className="neo-button w-full py-4 text-xl flex justify-center items-center gap-2 bg-[#FFD23F] hover:bg-[#FF3366] hover:text-white mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 size={24} className="animate-spin" strokeWidth={3} />
+              ) : (
+                <>
+                  {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'} <ArrowRight strokeWidth={3} />
+                </>
+              )}
             </button>
           </form>
 

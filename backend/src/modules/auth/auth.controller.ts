@@ -39,9 +39,8 @@ const clearRefreshCookie = (res: Response) => {
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { fullName, email, password } = req.body;
-    // Default registration creates an ATTENDEE. Admins would need to be created manually or via a separate protected route.
-    const { accessToken, refreshToken } = await AuthService.register(fullName, email, password, 'ATTENDEE');
+    const { fullName, email, password, role } = req.body;
+    const { accessToken, refreshToken } = await AuthService.register(fullName, email, password, role || 'ATTENDEE');
     
     setRefreshCookie(res, refreshToken);
 
