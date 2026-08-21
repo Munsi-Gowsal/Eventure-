@@ -1,40 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-bg-main: #0b0710;
-  --color-bg-sidebar: #17121b;
-  --color-bg-card: #1c1624;
-  --color-accent-primary: #b5179e;
-  --color-accent-secondary: #7209b7;
-  --color-border-subtle: #2d2438;
+  --color-bg-main: #f4f4f0; /* Off-white cream */
+  --color-bg-surface: #ffffff;
+  
+  --color-accent-primary: #FFD23F; /* Bright yellow */
+  --color-accent-secondary: #FF3366; /* Hot pink */
+  --color-accent-tertiary: #00E5FF; /* Cyan */
+  
+  --color-border-main: #000000;
+  --color-text-main: #000000;
+  --color-text-muted: #4b5563;
+  
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   background-color: var(--color-bg-main);
-  color: white;
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
 }
 
-/* Custom scrollbar for webkit */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* Neo-Brutalism Utilities */
+.neo-card {
+  background-color: var(--color-bg-surface);
+  border: 3px solid var(--color-border-main);
+  box-shadow: 6px 6px 0px 0px var(--color-border-main);
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.neo-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px 0px var(--color-border-main);
+}
+
+.neo-button {
+  background-color: var(--color-accent-primary);
+  color: var(--color-text-main);
+  border: 3px solid var(--color-border-main);
+  box-shadow: 4px 4px 0px 0px var(--color-border-main);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.neo-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--color-border-main);
+}
+
+.neo-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--color-border-main);
+}
+
+.neo-input {
+  background-color: var(--color-bg-surface);
+  border: 3px solid var(--color-border-main);
+  box-shadow: 4px 4px 0px 0px var(--color-border-main);
+  font-family: var(--font-sans);
+  color: var(--color-text-main);
+  transition: all 0.2s ease;
+  outline: none;
+  border-radius: 0;
+}
+
+.neo-input:focus {
+  box-shadow: 6px 6px 0px 0px var(--color-accent-tertiary);
+  transform: translate(-2px, -2px);
+}
+
+.neo-badge {
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border-main);
+  box-shadow: 2px 2px 0px 0px var(--color-border-main);
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-main);
+  border-radius: 0;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--color-bg-main);
+  border-left: 3px solid var(--color-border-main);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-subtle);
-  border-radius: 4px;
+  background: var(--color-accent-primary);
+  border: 3px solid var(--color-border-main);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent-secondary);
 }
 
-/* Hide scrollbar for pills container but keep functionality */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

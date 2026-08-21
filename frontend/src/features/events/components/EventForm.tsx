@@ -49,7 +49,7 @@ export const EventForm: React.FC<EventFormProps> = ({ initialValues, onSubmit, i
         {errors.title && <span className="text-red-500 text-xs mt-1 block">{errors.title.message}</span>}
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm text-gray-500 mb-1.5 font-medium">Date</label>
           <input 
@@ -69,7 +69,7 @@ export const EventForm: React.FC<EventFormProps> = ({ initialValues, onSubmit, i
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm text-gray-500 mb-1.5 font-medium">Zone / Location</label>
           <input 
@@ -91,7 +91,7 @@ export const EventForm: React.FC<EventFormProps> = ({ initialValues, onSubmit, i
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm text-gray-500 mb-1.5 font-medium">Capacity</label>
           <input 

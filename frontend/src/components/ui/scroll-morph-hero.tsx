@@ -82,7 +82,6 @@ function FlipCard({
 
 // --- Main Hero Component ---
 const TOTAL_IMAGES = 20;
-const MAX_SCROLL = 3000; // Virtual scroll range
 
 // Unsplash Images
 const IMAGES = [

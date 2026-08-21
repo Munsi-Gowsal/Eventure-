@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Users, Calendar as CalendarIcon, Map } from 'lucide-react';
+import { Users, Calendar as CalendarIcon, Map, Plus } from 'lucide-react';
 import { eventsApi } from '../features/events/api';
 import type { Event } from '../features/events/types';
 import { AdminEventModal } from '../features/events/components/AdminEventModal';
@@ -24,7 +24,7 @@ export const AdminDashboard: React.FC = () => {
     mutationFn: eventsApi.createEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast('Event created successfully', 'success');
+      toast('your event is created successfully', 'success');
       setIsModalOpen(false);
     },
     onError: (err: any) => {
@@ -79,120 +79,118 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="p-8 lg:p-12 max-w-7xl mx-auto text-[#f1f1f1]">
+      <div className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto">
         
-        {/* Header matching the "Select Zone" / "Workspace booking" vibe */}
-        <header className="mb-10">
-          <h1 className="text-3xl font-medium text-white mb-2 tracking-tight">Eventure Management</h1>
-          <p className="text-gray-400 text-sm">Select what you want to manage or create a new event.</p>
+        {/* Header */}
+        <header className="mb-8 md:mb-12 border-b-[6px] border-black pb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-black font-display uppercase tracking-tighter mb-4 text-black text-shadow-[4px_4px_0px_#FFD23F]">Eventure Management</h1>
+          <p className="font-bold text-base md:text-lg bg-white border-2 border-black inline-block px-4 py-2 shadow-[2px_2px_0px_0px_#000]">Select what you want to manage or create a new event.</p>
         </header>
 
-        {/* Large Action Cards mirroring "For me" / "For Team" */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl">
+        {/* Large Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {/* Card 1: Create Event */}
-          <div className="bg-[#1a1a1a] rounded-[24px] p-8 border border-[#2a2a2a] relative overflow-hidden group shadow-[0_0_30px_rgba(155,81,224,0.05)] hover:shadow-[0_0_40px_rgba(155,81,224,0.15)] transition-shadow">
-            {/* Soft glow behind */}
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#9b51e0] opacity-20 blur-[50px] rounded-full group-hover:opacity-30 transition-opacity" />
-            
-            <div className="mb-8">
-              <div className="w-16 h-16 flex items-center justify-center">
-                <User size={48} className="text-[#9b51e0]" strokeWidth={1.5} />
+          <div className="neo-card bg-white p-10 flex flex-col justify-between group">
+            <div>
+              <div className="w-20 h-20 bg-[#FFD23F] border-[3px] border-black shadow-[4px_4px_0_0_#000] flex items-center justify-center mb-8 rotate-[-5deg] group-hover:rotate-0 transition-transform">
+                <Plus size={40} className="text-black" strokeWidth={3} />
               </div>
+              <h2 className="text-4xl font-black font-display uppercase mb-4">Create Event</h2>
+              <p className="font-bold text-lg mb-8 max-w-[250px] border-l-[4px] border-[#FF3366] pl-3">
+                Host a new event on the platform.
+              </p>
             </div>
-            
-            <h2 className="text-3xl font-medium mb-3">Create Event</h2>
-            <p className="text-gray-500 mb-8 max-w-[200px] leading-relaxed">
-              I want to host a new event on the platform
-            </p>
             
             <button 
               onClick={openCreateModal}
-              className="bg-[#b573f0] hover:bg-[#a662e0] text-black font-semibold px-6 py-2.5 rounded-lg transition-colors inline-block"
+              className="neo-button py-4 text-xl w-full bg-[#00E5FF] hover:bg-[#FF3366] hover:text-white"
             >
-              Get started
+              GET STARTED
             </button>
           </div>
 
-          {/* Card 2: View Events / Settings */}
-          <div className="bg-[#1a1a1a] rounded-[24px] p-8 border border-[#2a2a2a] relative overflow-hidden group shadow-[0_0_30px_rgba(59,130,246,0.05)] hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] transition-shadow">
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-500 opacity-20 blur-[50px] rounded-full group-hover:opacity-30 transition-opacity" />
-            
-            <div className="mb-8">
-              <div className="w-16 h-16 flex items-center justify-center">
-                <Users size={48} className="text-blue-500" strokeWidth={1.5} />
+          {/* Card 2: Manage Team */}
+          <div className="neo-card bg-white p-10 flex flex-col justify-between group">
+            <div>
+              <div className="w-20 h-20 bg-[#00E5FF] border-[3px] border-black shadow-[4px_4px_0_0_#000] flex items-center justify-center mb-8 rotate-[5deg] group-hover:rotate-0 transition-transform">
+                <Users size={40} className="text-black" strokeWidth={3} />
               </div>
+              <h2 className="text-4xl font-black font-display uppercase mb-4">Manage Team</h2>
+              <p className="font-bold text-lg mb-8 max-w-[250px] border-l-[4px] border-[#FFD23F] pl-3">
+                Manage event organizers and settings.
+              </p>
             </div>
             
-            <h2 className="text-3xl font-medium mb-3">Manage Team</h2>
-            <p className="text-gray-500 mb-8 max-w-[200px] leading-relaxed">
-              I want to manage event organizers and settings
-            </p>
-            
-            <button className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors inline-block">
-              Settings
+            <button className="neo-button py-4 text-xl w-full bg-[#FF3366] text-white hover:bg-black">
+              SETTINGS
             </button>
           </div>
         </div>
 
         {/* Event List Section */}
         <section>
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6">
             <div>
-              <h2 className="text-2xl font-medium text-white mb-1">Your Events Map</h2>
-              <p className="text-gray-400 text-sm">Pick your event to edit or manage attendees</p>
+              <h2 className="text-4xl font-black font-display uppercase mb-2">Your Events Map</h2>
+              <p className="font-bold bg-[#FFD23F] border-2 border-black inline-block px-3 py-1 text-sm shadow-[2px_2px_0_0_#000]">Pick your event to edit or manage attendees.</p>
             </div>
             
-            <div className="flex gap-4">
-               {/* Filters mirroring the dropdowns in Select Zone */}
+            <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
                <div className="flex flex-col">
-                 <label className="text-xs text-gray-500 mb-1">Category</label>
-                 <select className="bg-[#1a1a1a] border border-[#333] text-sm text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#9b51e0]">
+                 <label className="font-black font-display uppercase mb-2 ml-1 text-sm">Category</label>
+                 <select className="neo-input py-3 px-4 font-bold uppercase min-w-[150px] cursor-pointer">
                    <option>All categories</option>
                    <option>Tech</option>
                    <option>Music</option>
                  </select>
                </div>
                <div className="flex items-end">
-                 <button className="bg-[#b573f0] hover:bg-[#a662e0] text-black text-sm font-medium px-4 py-1.5 rounded-lg">
-                   Check
+                 <button className="neo-button px-6 py-3 bg-black text-white hover:bg-[#00E5FF] hover:text-black">
+                   FILTER
                  </button>
                </div>
             </div>
           </div>
 
-          <div className="bg-[#1a1a1a] border border-[#333] p-6 rounded-xl min-h-[400px]">
+          <div className="neo-card bg-white p-4 md:p-8 lg:p-12 min-h-[400px]">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full text-gray-500">Loading events...</div>
+              <div className="flex items-center justify-center h-full font-black font-display uppercase text-2xl text-gray-400">Loading events...</div>
             ) : events.length === 0 ? (
-               <div className="flex items-center justify-center h-full text-gray-500">No events found. Create one above!</div>
+               <div className="flex flex-col items-center justify-center h-full text-black">
+                 <div className="w-24 h-24 bg-gray-200 border-[3px] border-black flex items-center justify-center mb-6 shadow-[4px_4px_0_0_#000]">
+                    <CalendarIcon size={40} strokeWidth={3} />
+                 </div>
+                 <h3 className="text-3xl font-black font-display uppercase mb-2">No events found</h3>
+                 <p className="font-bold">Create one above!</p>
+               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map((event) => (
-                  <div key={event._id} className="bg-[#242424] border border-[#333] rounded-lg p-5 flex flex-col group relative overflow-hidden">
-                    {/* Status indicator (like the red dot in the map) */}
-                    <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-red-500" />
+                  <div key={event._id} className="neo-card flex flex-col bg-[#f4f4f0] relative">
+                    {/* Status indicator */}
+                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#00E5FF] border-[3px] border-black shadow-[2px_2px_0_0_#000]" />
                     
-                    <div className="pl-6 mb-4">
-                      <h3 className="text-lg font-medium text-white line-clamp-1">{event.title}</h3>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider">{event.category || 'General'}</p>
+                    <div className="p-6 border-b-[3px] border-black bg-white">
+                      <p className="inline-block px-2 py-1 bg-[#FFD23F] border-2 border-black font-bold text-xs uppercase mb-3 shadow-[2px_2px_0_0_#000]">{event.category || 'General'}</p>
+                      <h3 className="text-2xl font-black font-display uppercase line-clamp-1">{event.title}</h3>
                     </div>
 
-                    <div className="space-y-2 mb-6">
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <CalendarIcon size={14} className="text-[#9b51e0]" />
+                    <div className="p-6 space-y-4 bg-white flex-1 border-b-[3px] border-black">
+                      <div className="flex items-start gap-3 font-bold text-sm">
+                        <CalendarIcon size={20} strokeWidth={2.5} className="text-[#FF3366] shrink-0" />
                         <span>{new Date(event.date).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Map size={14} className="text-[#9b51e0]" />
-                        <span>{event.location || 'TBA'}</span>
+                      <div className="flex items-start gap-3 font-bold text-sm">
+                        <Map size={20} strokeWidth={2.5} className="text-[#00E5FF] shrink-0" />
+                        <span className="line-clamp-1">{event.location || 'TBA'}</span>
                       </div>
                     </div>
 
-                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#333]">
-                      <span className="text-xs font-mono text-gray-400">{event.attendees} Attending</span>
+                    <div className="p-6 bg-[#f4f4f0] flex justify-between items-center">
+                      <span className="font-bold uppercase text-sm border-2 border-black bg-white px-3 py-1 shadow-[2px_2px_0_0_#000]">{event.attendees} Attending</span>
                       <div className="flex gap-2">
-                        <button onClick={() => openEditModal(event)} className="text-xs text-[#b573f0] hover:text-white transition-colors">Edit</button>
-                        <button onClick={() => handleDelete(event._id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                        <button onClick={() => openEditModal(event)} className="neo-button px-4 py-2 bg-white text-sm">Edit</button>
+                        <button onClick={() => handleDelete(event._id)} className="neo-button px-4 py-2 bg-[#FF3366] text-white text-sm">Del</button>
                       </div>
                     </div>
                   </div>
